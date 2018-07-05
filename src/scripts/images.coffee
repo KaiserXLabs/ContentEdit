@@ -45,6 +45,9 @@ class ContentEdit.Image extends ContentEdit.ResizableElement
 
     html: (indent='') ->
         # Return a HTML string for the node
+        delete @_attributes['width']
+        delete @_attributes['height']
+
         img = "#{ indent }<img#{ @_attributesToString() }>"
         if @a
             le = ContentEdit.LINE_ENDINGS
@@ -59,8 +62,8 @@ class ContentEdit.Image extends ContentEdit.ResizableElement
     mount: () ->
         # Mount the element on to the DOM
 
-        # Create the DOM element to mount
-        @_domElement = document.createElement('div')
+        # Create the img DOM element to mount
+        @_domElement = document.createElement('img')
 
         # Set the classes for the image, we combine classes from both the outer
         # link tag (if there is one) and image element.
@@ -73,18 +76,9 @@ class ContentEdit.Image extends ContentEdit.ResizableElement
 
         @_domElement.setAttribute('class', classes)
 
-        # Set the background image for the
         style = if @_attributes['style'] then @_attributes['style'] else ''
-        style += "background-image:url('#{ @_attributes['src'] }');"
-
-        # Set the size using style
-        if @_attributes['width']
-            style += "width:#{ @_attributes['width'] }px;"
-
-        if @_attributes['height']
-            style += "height:#{ @_attributes['height'] }px;"
-
         @_domElement.setAttribute('style', style)
+        @_domElement.setAttribute('src', @_attributes['src'])
 
         super()
 
@@ -214,16 +208,21 @@ class ContentEdit.ImageFixture extends ContentEdit.Element
         alt = ''
         unless @_attributes['alt'] is undefined
             alt = "alt=\"#{ @_attributes['alt'] }\""
-        img = "#{ indent }<img src=\"#{ @src() }\"#{ alt }>"
-        return "#{ indent }<#{ @tagName() } #{ attributes }>#{ le }" +
-            "#{ ContentEdit.INDENT }#{ img }#{ le }" +
-            "#{ indent }</#{ @tagName() }>"
+        #img = "#{ indent }<img src=\"#{ @src() }\"#{ alt }>"
+        #return "#{ indent }<#{ @tagName() } #{ attributes }>#{ le }" +
+        #    "#{ ContentEdit.INDENT }#{ img }#{ le }" +
+        #    "#{ indent }</#{ @tagName() }>"
+
+        return "#{ indent }<img src=\"#{ @src() }\" #{ attributes }#{ alt }>"
 
     mount: () ->
         # Mount the element on to the DOM
 
         # Create the DOM element to mount
         @_domElement = document.createElement(@tagName())
+        @_domElement = document.createElement('img')
+
+
 
         # Set the attributes
         for name, value of @_attributes
@@ -244,11 +243,12 @@ class ContentEdit.ImageFixture extends ContentEdit.Element
 
         # Remove any existing background image from the style attribute
         style = if @_attributes['style'] then @_attributes['style'] else ''
-        style = style.replace(/background-image:.+?(;|$)/i, '')
+        #style = style.replace(/background-image:.+?(;|$)/i, '')
 
         # Set the background image for the element
-        style = [style.trim(), "background-image:url('#{ @src() }');"].join(' ')
+        #style = [style.trim(), "background-image:url('#{ @src() }');"].join(' ')
 
+        @_domElement.setAttribute('src', @src());
         @_domElement.setAttribute('style', style.trim())
 
         super()
@@ -335,6 +335,7 @@ class ContentEdit.ImageFixture extends ContentEdit.Element
         # Get the image attributes
         src = ''
         alt = ''
+        ###
         childNodes = (c for c in domElement.childNodes)
         for childNode in childNodes
             if childNode.nodeType == 1 \
@@ -345,6 +346,8 @@ class ContentEdit.ImageFixture extends ContentEdit.Element
 
         attributes = @getDOMElementAttributes(domElement)
         attributes['alt'] = alt
+        ###
+        src = attributes['src']
 
         return new @(domElement.tagName, attributes, src)
 
